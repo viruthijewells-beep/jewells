@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import {
     ScanBarcode, Package, Search, Loader2, Camera, CameraOff,
@@ -47,18 +47,25 @@ export default function Scan() {
     const [product, setProduct] = useState<ScannedProduct>(null)
     const [isScanning, setIsScanning] = useState(false)
     const [notFound, setNotFound] = useState(false)
+    const [lastScanned, setLastScanned] = useState('')
 
-    // ─── Universal Camera Scanner ─────────────────────────────────
-    const scanner = useBarcodeScanner('qr-reader', (decodedText) => {
+    // ─── ZXing-based scanner with video ref ───────────────────────────────────
+    const videoRef = useRef<HTMLVideoElement>(null)
+
+    const handleScanResult = (decodedText: string) => {
+        // Debounce: ignore repeated identical scans within 2s
+        if (decodedText === lastScanned) return
+        setLastScanned(decodedText)
+        setTimeout(() => setLastScanned(''), 2000)
+
         setBarcode(decodedText)
         lookupBarcode(decodedText)
-    }, {
-        fps: 15,
-        qrboxWidth: 280,
-        qrboxHeight: 150,
-    })
+        toast.success(`Barcode detected: ${decodedText}`)
+    }
 
-    // ─── Barcode Lookup ───────────────────────────────────────────
+    const scanner = useBarcodeScanner(videoRef, handleScanResult)
+
+    // ─── Barcode Lookup ───────────────────────────────────────────────────────
     const lookupBarcode = async (code: string) => {
         if (!code.trim()) return
         setIsScanning(true)
@@ -82,14 +89,13 @@ export default function Scan() {
         }
     }
 
-    const handleManualScan = () => {
-        lookupBarcode(barcode)
-    }
+    const handleManualScan = () => lookupBarcode(barcode)
 
     const handleScanAnother = () => {
         setProduct(null)
         setBarcode('')
         setNotFound(false)
+        setLastScanned('')
         scanner.start()
     }
 
@@ -101,7 +107,9 @@ export default function Scan() {
                     <ScanBarcode className="text-black w-10 h-10" />
                 </div>
                 <h2 className="text-2xl font-bold heading-luxury">Barcode Scanner</h2>
-                <p className="text-muted-foreground text-sm mt-2">Scan with camera or enter barcode manually · Multi-branch stock</p>
+                <p className="text-muted-foreground text-sm mt-2">
+                    Scan with camera or enter barcode manually · Multi-branch stock
+                </p>
             </div>
 
             {/* Camera Section */}
@@ -111,7 +119,7 @@ export default function Scan() {
                         <Camera className="w-4 h-4 text-gold" /> Camera Scanner
                     </h3>
                     <div className="flex items-center gap-3">
-                        {/* Camera selector dropdown */}
+                        {/* Camera switcher — only when multiple cameras available */}
                         {scanner.cameras.length > 1 && scanner.isActive && (
                             <div className="relative">
                                 <select
@@ -121,7 +129,7 @@ export default function Scan() {
                                 >
                                     {scanner.cameras.map(cam => (
                                         <option key={cam.deviceId} value={cam.deviceId}>
-                                            {cam.label}
+                                            {cam.isRear ? '📷 Rear: ' : cam.isFront ? '🤳 Front: ' : '📸 '}{cam.label}
                                         </option>
                                     ))}
                                 </select>
@@ -153,9 +161,10 @@ export default function Scan() {
                 {scanner.cameras.length > 0 && (
                     <p className="text-[10px] text-muted-foreground/60">
                         {scanner.cameras.length} camera{scanner.cameras.length > 1 ? 's' : ''} detected
-                        {scanner.activeCameraId && scanner.cameras.find(c => c.deviceId === scanner.activeCameraId)
-                            ? ` · Using: ${scanner.cameras.find(c => c.deviceId === scanner.activeCameraId)?.label}`
-                            : ''}
+                        {scanner.activeCameraId && (() => {
+                            const active = scanner.cameras.find(c => c.deviceId === scanner.activeCameraId)
+                            return active ? ` · Using: ${active.label}` : ''
+                        })()}
                     </p>
                 )}
 
@@ -172,14 +181,66 @@ export default function Scan() {
                     </div>
                 )}
 
-                {/* Scanner viewport */}
-                <div
-                    id="qr-reader"
-                    className={`rounded-xl overflow-hidden bg-black/50 ${scanner.isActive ? 'min-h-[300px]' : 'min-h-0'}`}
-                    style={{ display: scanner.isActive || scanner.isStarting ? 'block' : 'none' }}
-                />
+                {/* ─── Video viewport — ZXing renders into this <video> ─────────── */}
+                <AnimatePresence>
+                    {(scanner.isActive || scanner.isStarting) && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="relative overflow-hidden rounded-xl bg-black"
+                        >
+                            {/* The actual video stream */}
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                muted
+                                playsInline    /* critical for iOS Safari */
+                                className="w-full max-h-[350px] object-cover"
+                                style={{ display: 'block' }}
+                            />
 
-                {/* Idle start button */}
+                            {/* Scanning guide overlay */}
+                            {scanner.isActive && (
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    {/* Dark vignette */}
+                                    <div className="absolute inset-0 bg-black/30" />
+                                    {/* Scan box */}
+                                    <div
+                                        className="relative z-10 border-2 border-gold/80 rounded-lg"
+                                        style={{ width: '75%', maxWidth: 320, height: 140 }}
+                                    >
+                                        {/* Corner accents */}
+                                        <span className="absolute -top-0.5 -left-0.5 w-5 h-5 border-t-2 border-l-2 border-gold rounded-tl-lg" />
+                                        <span className="absolute -top-0.5 -right-0.5 w-5 h-5 border-t-2 border-r-2 border-gold rounded-tr-lg" />
+                                        <span className="absolute -bottom-0.5 -left-0.5 w-5 h-5 border-b-2 border-l-2 border-gold rounded-bl-lg" />
+                                        <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 border-b-2 border-r-2 border-gold rounded-br-lg" />
+                                        {/* Animated scan line */}
+                                        <motion.div
+                                            className="absolute left-2 right-2 h-[1px] bg-gold/70"
+                                            animate={{ top: ['15%', '85%', '15%'] }}
+                                            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                                        />
+                                    </div>
+                                    {/* Label */}
+                                    <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[11px] tracking-[0.2em] uppercase text-white/60 z-10">
+                                        Align barcode within frame
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Starting spinner */}
+                            {scanner.isStarting && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 gap-3">
+                                    <Loader2 className="w-8 h-8 animate-spin text-gold" />
+                                    <p className="text-xs text-white/60 tracking-wider uppercase">Opening camera…</p>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Idle start prompt */}
                 {!scanner.isActive && !scanner.isStarting && !scanner.error && (
                     <button
                         onClick={scanner.start}
@@ -187,10 +248,10 @@ export default function Scan() {
                     >
                         <Camera className="w-10 h-10 text-muted-foreground group-hover:text-gold transition-colors" />
                         <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                            Click to open camera and scan barcode
+                            Tap to open camera and scan barcode
                         </span>
                         <span className="text-[10px] text-muted-foreground/50">
-                            Works with mobile rear camera, laptop webcam, or external camera
+                            Uses rear camera on mobile · Works on all browsers
                         </span>
                     </button>
                 )}
@@ -248,7 +309,7 @@ export default function Scan() {
                 )}
             </AnimatePresence>
 
-            {/* Product Result — Multi-Branch */}
+            {/* Product Result */}
             <AnimatePresence>
                 {product && (
                     <motion.div
@@ -263,7 +324,6 @@ export default function Scan() {
                                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                                 <h3 className="text-lg font-semibold heading-luxury">Product Found</h3>
                             </div>
-
                             <div className="flex items-start gap-5">
                                 {product.image_url ? (
                                     <img src={product.image_url} alt={product.name} className="w-20 h-20 rounded-xl object-cover border-2 border-gold/20 shrink-0" />
@@ -274,7 +334,6 @@ export default function Scan() {
                                 )}
                                 <div className="flex-1 space-y-3">
                                     <h3 className="text-xl font-bold heading-luxury">{product.name}</h3>
-
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
                                         <div className="flex justify-between">
                                             <span className="text-muted-foreground">Barcode</span>
@@ -303,7 +362,7 @@ export default function Scan() {
                             </div>
                         </div>
 
-                        {/* Total Stock Bar */}
+                        {/* Total Stock */}
                         <div className={`glass-card rounded-2xl p-5 ${product.isLowStock ? 'border border-red-500/20' : 'border border-emerald-500/20'}`}>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -319,7 +378,7 @@ export default function Scan() {
                             </div>
                         </div>
 
-                        {/* Per-Branch Stock Cards */}
+                        {/* Per-Branch Stock */}
                         <div className="space-y-2">
                             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 px-1">
                                 <MapPin className="w-3.5 h-3.5 text-gold" /> Stock Per Branch
@@ -360,7 +419,7 @@ export default function Scan() {
                             ))}
                         </div>
 
-                        {/* Barcode Image + Download */}
+                        {/* Barcode Image */}
                         {product.barcode && (
                             <div className="glass-card rounded-2xl p-5">
                                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Product Barcode</p>
