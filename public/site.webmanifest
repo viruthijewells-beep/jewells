@@ -1,0 +1,18 @@
+{
+    "name": "Virudti Jewells",
+    "short_name": "Virudti",
+    "description": "Timeless Gold • Trusted Purity | Premium Jewellery Store in Madurai",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "theme_color": "#D4AF37",
+    "background_color": "#0c0c0c",
+    "display": "standalone",
+    "start_url": "/",
+    "scope": "/"
+}

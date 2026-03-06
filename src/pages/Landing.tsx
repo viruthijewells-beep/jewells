@@ -10,7 +10,96 @@ import { ROUTES } from '@/lib/routes'
 import BrandIntro from '@/components/BrandIntro'
 
 /* ═══════════════════════════════════════════════════════════════════
-   1️⃣ ANNOUNCEMENT BAR — Rotating Gold Strip
+   1️⃣ LUXURY NAVBAR — Centered Navigation (no logo, branding in hero only)
+   ═══════════════════════════════════════════════════════════════════ */
+const NAV_LINKS = [
+    { label: 'Home', href: '#hero' },
+    { label: 'Collection', href: '#collections' },
+    { label: 'Bridal', href: '#bridal' },
+    { label: 'About', href: '#about' },
+    { label: 'Contact', href: '#contact' },
+]
+
+function Navbar() {
+    const [scrolled, setScrolled] = useState(false)
+    const [mobileOpen, setMobileOpen] = useState(false)
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 40)
+        window.addEventListener('scroll', onScroll, { passive: true })
+        return () => window.removeEventListener('scroll', onScroll)
+    }, [])
+
+    const handleNav = (href: string) => {
+        setMobileOpen(false)
+        const el = document.querySelector(href)
+        if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    return (
+        <header
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
+                ? 'bg-black/95 backdrop-blur-md border-b border-gold/10 py-3'
+                : 'bg-transparent py-5'
+                }`}
+        >
+            {/* Desktop centered nav */}
+            <nav className="hidden md:flex items-center justify-center gap-12 px-8">
+                {NAV_LINKS.map(link => (
+                    <button
+                        key={link.label}
+                        onClick={() => handleNav(link.href)}
+                        className="text-[11px] tracking-[0.3em] uppercase font-light text-white/60 hover:text-gold transition-colors duration-300 relative group"
+                    >
+                        {link.label}
+                        <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-gold group-hover:w-full transition-all duration-500" />
+                    </button>
+                ))}
+            </nav>
+
+            {/* Mobile hamburger */}
+            <div className="flex md:hidden items-center justify-between px-6">
+                <span className="text-[10px] tracking-[0.3em] uppercase text-gold/60 font-light">Menu</span>
+                <button
+                    onClick={() => setMobileOpen(v => !v)}
+                    className="flex flex-col gap-[5px] p-2"
+                    aria-label="Toggle menu"
+                >
+                    <span className={`block w-5 h-[1px] bg-white/60 transition-all duration-300 ${mobileOpen ? 'rotate-45 translate-y-[6px]' : ''}`} />
+                    <span className={`block w-5 h-[1px] bg-white/60 transition-all duration-300 ${mobileOpen ? 'opacity-0' : ''}`} />
+                    <span className={`block w-5 h-[1px] bg-white/60 transition-all duration-300 ${mobileOpen ? '-rotate-45 -translate-y-[6px]' : ''}`} />
+                </button>
+            </div>
+
+            {/* Mobile dropdown */}
+            <AnimatePresence>
+                {mobileOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden bg-black/98 border-t border-white/[0.05] overflow-hidden"
+                    >
+                        <div className="flex flex-col items-center py-8 gap-6">
+                            {NAV_LINKS.map(link => (
+                                <button
+                                    key={link.label}
+                                    onClick={() => handleNav(link.href)}
+                                    className="text-[11px] tracking-[0.3em] uppercase text-white/50 hover:text-gold transition-colors duration-300"
+                                >
+                                    {link.label}
+                                </button>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </header>
+    )
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ANNOUNCEMENT BAR — Slim gold strip (purely centered text, no logo)
    ═══════════════════════════════════════════════════════════════════ */
 function AnnouncementBar() {
     const announcements = [
@@ -25,23 +114,16 @@ function AnnouncementBar() {
     }, [])
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-md border-b border-gold/10 overflow-hidden">
-            <div className="py-2.5 px-4 text-center relative h-8 flex items-center justify-between">
-                {/* Brand logo in navbar */}
-                <img
-                    src="/virudti-banner.png"
-                    alt="Virudti Jewells"
-                    className="h-6 md:h-7 object-contain"
-                    draggable={false}
-                />
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-sm border-t border-gold/10 overflow-hidden">
+            <div className="py-2 flex items-center justify-center h-8">
                 <AnimatePresence mode="wait">
                     <motion.p
                         key={current}
-                        initial={{ opacity: 0, y: 12 }}
+                        initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -12 }}
+                        exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.5 }}
-                        className="text-xs md:text-sm tracking-[0.15em] text-gold/90 font-light absolute"
+                        className="text-[10px] md:text-xs tracking-[0.2em] text-gold/70 font-light uppercase"
                     >
                         {announcements[current]}
                     </motion.p>
@@ -222,7 +304,7 @@ function HeroSection() {
    ═══════════════════════════════════════════════════════════════════ */
 function AboutSection() {
     return (
-        <section className="py-28 px-6 bg-[#050505] relative overflow-hidden">
+        <section id="about" className="py-28 px-6 bg-[#050505] relative overflow-hidden">
             <div className="absolute left-0 top-0 w-1/4 h-full opacity-[0.02] bg-cover bg-center" style={{ backgroundImage: 'url(/hero-jewelry.png)' }} />
 
             <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
@@ -737,6 +819,7 @@ export default function Landing() {
                     will-change: transform;
                 }
             `}</style>
+                <Navbar />
                 <AnnouncementBar />
                 <HeroSection />
                 <AboutSection />
