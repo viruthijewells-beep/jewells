@@ -189,7 +189,7 @@ export async function createTransfer(transfer: {
     let newDestCount = quantity
 
     if (destInv) {
-        // Product exists in destination — update quantity
+        // Product exists at destination by product_id — update quantity
         oldDestCount = destInv.stock_count ?? 0
         newDestCount = oldDestCount + quantity
         const { error: addErr } = await supabase
@@ -198,26 +198,52 @@ export async function createTransfer(transfer: {
             .eq('id', destInv.id)
         if (addErr) throw new Error(`Destination update failed: ${addErr.message}`)
     } else {
-        // Product doesn't exist in destination — copy from source with the transfer qty
-        const { data: srcRow } = await supabase
+        // Product NOT found by product_id — fetch full source row details
+        const { data: srcRow, error: srcRowErr } = await supabase
             .from('branch_inventory')
             .select('sku, barcode, selling_price, purchase_price, min_stock_level')
             .eq('id', sourceInv.id)
             .single()
+        if (srcRowErr) throw new Error(`Failed to read source inventory: ${srcRowErr.message}`)
 
-        const { error: insertErr } = await supabase
+        // Also check if the barcode already exists in the destination
+        // (can happen if product was transferred before under a different product_id)
+        const { data: destByBarcode } = await supabase
             .from('branch_inventory')
-            .insert({
-                branch_id: toBranchId,
-                product_id: productId,
-                stock_count: quantity,
-                sku: srcRow?.sku ?? null,
-                barcode: srcRow?.barcode ?? null,
-                selling_price: srcRow?.selling_price ?? 0,
-                purchase_price: srcRow?.purchase_price ?? 0,
-                min_stock_level: srcRow?.min_stock_level ?? 5,
-            })
-        if (insertErr) throw new Error(`Destination insert failed: ${insertErr.message}`)
+            .select('id, stock_count')
+            .eq('branch_id', toBranchId)
+            .eq('barcode', srcRow?.barcode ?? '')
+            .maybeSingle()
+
+        if (destByBarcode) {
+            // Barcode exists at destination (different product_id row) — just increment stock
+            oldDestCount = destByBarcode.stock_count ?? 0
+            newDestCount = oldDestCount + quantity
+            const { error: mergeErr } = await supabase
+                .from('branch_inventory')
+                .update({ stock_count: newDestCount })
+                .eq('id', destByBarcode.id)
+            if (mergeErr) throw new Error(`Destination merge failed: ${mergeErr.message}`)
+        } else {
+            // Truly new at destination — use upsert with onConflict to be 100% safe
+            newDestCount = quantity
+            const { error: upsertErr } = await supabase
+                .from('branch_inventory')
+                .upsert(
+                    {
+                        branch_id: toBranchId,
+                        product_id: productId,
+                        stock_count: quantity,
+                        sku: srcRow?.sku ?? null,
+                        barcode: srcRow?.barcode ?? null,
+                        selling_price: srcRow?.selling_price ?? 0,
+                        purchase_price: srcRow?.purchase_price ?? 0,
+                        min_stock_level: srcRow?.min_stock_level ?? 5,
+                    },
+                    { onConflict: 'branch_id,barcode', ignoreDuplicates: false }
+                )
+            if (upsertErr) throw new Error(`Destination upsert failed: ${upsertErr.message}`)
+        }
     }
 
     // ── 5. Insert transfer record ──
