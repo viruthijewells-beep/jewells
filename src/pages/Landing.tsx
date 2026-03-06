@@ -381,7 +381,7 @@ function CollectionsSection() {
     ]
 
     return (
-        <section className="py-28 px-6 bg-[#080808]">
+        <section id="collections" className="py-28 px-6 bg-[#080808]">
             <div className="max-w-7xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -503,7 +503,7 @@ function ReviewsSection() {
     }, [])
 
     return (
-        <section className="py-28 px-6 bg-[#080808] relative overflow-hidden">
+        <section id="bridal" className="py-28 px-6 bg-[#050505] relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.02),transparent_50%)]" />
 
             <div className="max-w-3xl mx-auto text-center relative z-10">
@@ -564,7 +564,7 @@ function ReviewsSection() {
    ═══════════════════════════════════════════════════════════════════ */
 function ShowroomSection() {
     return (
-        <section className="py-28 px-6 bg-[#050505]">
+        <section id="contact" className="py-28 px-6 bg-[#050505]">
             <div className="max-w-7xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0 }}
