@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Allow: /collections
+Allow: /about
+Allow: /contact
+
+Disallow: /dashboard
+Disallow: /inventory
+Disallow: /scan
+Disallow: /history
+Disallow: /transfers
+Disallow: /pos
+Disallow: /barcodes
+Disallow: /audit
+Disallow: /users
+Disallow: /branches
+Disallow: /reports
+Disallow: /settings
+Disallow: /login
+
+# Virudti Jewells — Public website indexed, ERP pages blocked
+Sitemap: https://virudtijewells.com/sitemap.xml
