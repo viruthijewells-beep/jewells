@@ -12,8 +12,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import {
     BrowserMultiFormatReader,
-    IScannerControls,
 } from '@zxing/browser'
+import type { IScannerControls } from '@zxing/browser'
 import {
     BarcodeFormat,
     DecodeHintType,

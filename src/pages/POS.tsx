@@ -56,6 +56,7 @@ export default function POS() {
     const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
     const [sessionSales, setSessionSales] = useState<any[]>([])
     const invoiceRef = useRef<HTMLDivElement>(null)
+    const posVideoRef = useRef<HTMLVideoElement>(null)
 
     const barcodeRef = useRef<HTMLInputElement>(null)
 
@@ -87,13 +88,9 @@ export default function POS() {
     }
 
     // ── Universal Camera Scanner ──────────────────────────────────
-    const posScanner = useBarcodeScanner('pos-qr-reader', (text) => {
+    const posScanner = useBarcodeScanner(posVideoRef, (text) => {
         setBarcodeInput(text)
         addItemByBarcode(text)
-    }, {
-        fps: 15,
-        qrboxWidth: 250,
-        qrboxHeight: 120,
     })
 
     // ── Add Item ─────────────────────────────────────────────────
@@ -396,8 +393,14 @@ export default function POS() {
                             </select>
                         )}
                     </div>
-                    {/* Camera preview */}
-                    <div id="pos-qr-reader" className={`mt-3 rounded-xl overflow-hidden ${posScanner.isActive ? 'min-h-[200px]' : 'hidden'}`} />
+                    {/* Camera preview — ZXing renders into this <video> element */}
+                    <video
+                        ref={posVideoRef}
+                        autoPlay
+                        muted
+                        playsInline
+                        className={`mt-3 rounded-xl overflow-hidden w-full max-h-[200px] object-cover bg-black ${posScanner.isActive ? 'block' : 'hidden'}`}
+                    />
                     {posScanner.error && (
                         <p className="text-xs text-red-400 mt-2">{posScanner.error}</p>
                     )}
