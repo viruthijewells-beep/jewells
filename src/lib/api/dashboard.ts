@@ -44,12 +44,31 @@ export async function fetchDashboardStats() {
             date: new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             count: s.new_count,
         })),
-        recentActivity: (recentActivity ?? []).map((a: any) => ({
-            action: a.action,
-            details: typeof a.details === 'object' ? JSON.stringify(a.details) : a.details,
-            user: a.user,
-            createdAt: a.created_at,
-        })),
+        recentActivity: (recentActivity ?? []).map((a: any) => {
+            // Parse details JSON into a readable summary
+            let detailSummary = ''
+            try {
+                const d = typeof a.details === 'object' ? a.details : JSON.parse(a.details ?? '{}')
+                if (d.operation && d.newStock !== undefined) {
+                    const delta = d.stockDelta !== undefined ? ` (${d.stockDelta > 0 ? '+' : ''}${d.stockDelta})` : ''
+                    detailSummary = `${d.operation} · Stock ${d.oldStock ?? '?'} → ${d.newStock}${delta}`
+                } else if (d.table) {
+                    detailSummary = `Table: ${d.table}`
+                } else {
+                    const str = JSON.stringify(d)
+                    detailSummary = str.length > 60 ? str.slice(0, 60) + '…' : str
+                }
+            } catch {
+                const str = String(a.details ?? '')
+                detailSummary = str.length > 60 ? str.slice(0, 60) + '…' : str
+            }
+            return {
+                action: a.action,
+                details: detailSummary,
+                user: a.user,
+                createdAt: a.created_at,
+            }
+        }),
         categoryBreakdown: (categoryBreakdown ?? []).map((c: any) => ({
             name: c.name,
             count: c.products?.length ?? 0,

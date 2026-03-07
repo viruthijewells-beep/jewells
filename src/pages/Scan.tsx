@@ -319,43 +319,43 @@ export default function Scan() {
                         className="space-y-4"
                     >
                         {/* Product Info Card */}
-                        <div className="glass-card rounded-2xl p-6">
-                            <div className="flex items-center gap-2 mb-5">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        <div className="glass-card rounded-2xl p-5">
+                            <div className="flex items-center gap-2 mb-4">
+                                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
                                 <h3 className="text-lg font-semibold heading-luxury">Product Found</h3>
                             </div>
-                            <div className="flex items-start gap-5">
+                            <div className="flex flex-col sm:flex-row items-start gap-4">
                                 {product.image_url ? (
-                                    <img src={product.image_url} alt={product.name} className="w-20 h-20 rounded-xl object-cover border-2 border-gold/20 shrink-0" />
+                                    <img src={product.image_url} alt={product.name} className="w-16 h-16 rounded-xl object-cover border-2 border-gold/20 shrink-0" />
                                 ) : (
-                                    <div className="w-20 h-20 bg-secondary rounded-xl flex items-center justify-center shrink-0">
-                                        <Package className="w-10 h-10 text-gold" />
+                                    <div className="w-16 h-16 bg-secondary rounded-xl flex items-center justify-center shrink-0">
+                                        <Package className="w-8 h-8 text-gold" />
                                     </div>
                                 )}
-                                <div className="flex-1 space-y-3">
-                                    <h3 className="text-xl font-bold heading-luxury">{product.name}</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Barcode</span>
-                                            <span className="font-mono font-medium text-gold">{product.barcode}</span>
+                                <div className="flex-1 min-w-0 space-y-3 w-full">
+                                    <h3 className="text-xl font-bold heading-luxury break-words">{product.name}</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Barcode</p>
+                                            <p className="font-mono font-medium text-gold text-xs break-all mt-0.5">{product.barcode}</p>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Category</span>
-                                            <span className="font-medium">{product.categoryName}</span>
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Category</p>
+                                            <p className="font-medium mt-0.5">{product.categoryName}</p>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Metal</span>
-                                            <span className={`font-medium px-2 py-0.5 rounded text-xs border ${METAL_BADGE_COLORS[(product.metal_type as keyof typeof METAL_BADGE_COLORS)] || METAL_BADGE_COLORS.Gold}`}>
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Metal</p>
+                                            <span className={`font-medium px-2 py-0.5 rounded text-xs border inline-block mt-0.5 ${METAL_BADGE_COLORS[(product.metal_type as keyof typeof METAL_BADGE_COLORS)] || METAL_BADGE_COLORS.Gold}`}>
                                                 {product.metal_type ?? 'Gold'} · {product.purity ?? product.gold_type ?? '22K'}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Weight</span>
-                                            <span className="font-medium">{product.weight}g</span>
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Weight</p>
+                                            <p className="font-medium mt-0.5">{product.weight}g</p>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Design</span>
-                                            <span className="font-medium text-gold">{product.design_code}</span>
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Design</p>
+                                            <p className="font-medium text-gold mt-0.5">{product.design_code}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -364,15 +364,15 @@ export default function Scan() {
 
                         {/* Total Stock */}
                         <div className={`glass-card rounded-2xl p-5 ${product.isLowStock ? 'border border-red-500/20' : 'border border-emerald-500/20'}`}>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <Building2 className="w-5 h-5 text-gold" />
-                                    <div>
-                                        <p className="text-sm font-semibold">Total Stock Across All Branches</p>
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <Building2 className="w-5 h-5 text-gold shrink-0" />
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-semibold">Total Stock</p>
                                         <p className="text-xs text-muted-foreground">{product.branches.length} branch{product.branches.length !== 1 ? 'es' : ''}</p>
                                     </div>
                                 </div>
-                                <span className={`text-3xl font-bold ${product.isLowStock ? 'text-red-400' : 'text-emerald-400'}`}>
+                                <span className={`text-3xl font-bold shrink-0 ${product.isLowStock ? 'text-red-400' : 'text-emerald-400'}`}>
                                     {product.totalStock}
                                 </span>
                             </div>
@@ -389,31 +389,36 @@ export default function Scan() {
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: idx * 0.05 }}
-                                    className={`glass-card rounded-xl p-4 flex items-center justify-between ${branch.isLowStock ? 'border border-red-500/15' : ''}`}
+                                    className={`glass-card rounded-xl p-4 ${branch.isLowStock ? 'border border-red-500/15' : ''}`}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${branch.isLowStock ? 'bg-red-400' : 'bg-emerald-400'}`} />
-                                        <div>
-                                            <p className="text-sm font-semibold">{branch.branchName}</p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                SKU: {branch.sku} · ₹{Number(branch.sellingPrice).toLocaleString()}
-                                            </p>
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex items-start gap-2.5 min-w-0">
+                                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 ${branch.isLowStock ? 'bg-red-400' : 'bg-emerald-400'}`} />
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold truncate">{branch.branchName}</p>
+                                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                    SKU: {branch.sku}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    ₹{Number(branch.sellingPrice).toLocaleString()}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className={`text-xl font-bold ${branch.isLowStock ? 'text-red-400' : 'text-emerald-400'}`}>
-                                            {branch.stockCount}
-                                        </span>
-                                        {branch.isLowStock && (
-                                            <p className="text-[9px] text-red-400 flex items-center gap-1 justify-end">
-                                                <AlertCircle className="w-2.5 h-2.5" /> min: {branch.minStock}
-                                            </p>
-                                        )}
-                                        {branch.lastUpdated && (
-                                            <p className="text-[9px] text-muted-foreground/50">
-                                                {new Date(branch.lastUpdated).toLocaleDateString()}
-                                            </p>
-                                        )}
+                                        <div className="text-right shrink-0">
+                                            <span className={`text-xl font-bold ${branch.isLowStock ? 'text-red-400' : 'text-emerald-400'}`}>
+                                                {branch.stockCount}
+                                            </span>
+                                            {branch.isLowStock && (
+                                                <p className="text-[9px] text-red-400 flex items-center gap-1 justify-end">
+                                                    <AlertCircle className="w-2.5 h-2.5" /> min: {branch.minStock}
+                                                </p>
+                                            )}
+                                            {branch.lastUpdated && (
+                                                <p className="text-[9px] text-muted-foreground/50">
+                                                    {new Date(branch.lastUpdated).toLocaleDateString()}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </motion.div>
                             ))}

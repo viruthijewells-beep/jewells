@@ -272,16 +272,31 @@ export default function Dashboard() {
                 <h3 className="text-lg font-semibold heading-serif mb-4 flex items-center gap-2">
                     <Clock className="w-5 h-5 text-gold" /> Recent Activity
                 </h3>
-                <div className="space-y-3">
-                    {(stats?.recentActivity || []).slice(0, 5).map((activity: any, i: number) => (
-                        <div key={i} className="flex items-center justify-between py-3 border-b border-border/30 last:border-0">
-                            <div>
-                                <p className="text-sm font-medium">{activity.action}</p>
-                                <p className="text-xs text-muted-foreground">{activity.details}</p>
+                <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
+                    {(stats?.recentActivity || []).slice(0, 8).map((activity: any, i: number) => (
+                        <div key={i} className="py-3 border-b border-border/30 last:border-0">
+                            <div className="flex items-start justify-between gap-3 min-w-0">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-semibold text-gold uppercase tracking-wider truncate">
+                                        {activity.action?.replace(/_/g, ' ')}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-0.5 break-words line-clamp-2">
+                                        {activity.details}
+                                    </p>
+                                </div>
+                                <div className="text-right shrink-0">
+                                    <p className="text-[10px] text-muted-foreground/60">
+                                        {activity.user?.name || 'System'}
+                                    </p>
+                                    {activity.createdAt && (
+                                        <p className="text-[9px] text-muted-foreground/40 mt-0.5">
+                                            {new Date(activity.createdAt).toLocaleTimeString('en-IN', {
+                                                hour: '2-digit', minute: '2-digit',
+                                            })}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                            <p className="text-[10px] text-muted-foreground/60">
-                                {activity.user?.name || 'System'}
-                            </p>
                         </div>
                     ))}
                     {(!stats?.recentActivity || stats.recentActivity.length === 0) && (
