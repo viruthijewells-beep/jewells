@@ -30,6 +30,12 @@ function Navbar() {
         return () => window.removeEventListener('scroll', onScroll)
     }, [])
 
+    // Lock body scroll when menu is open
+    useEffect(() => {
+        document.body.style.overflow = mobileOpen ? 'hidden' : ''
+        return () => { document.body.style.overflow = '' }
+    }, [mobileOpen])
+
     const handleNav = (href: string) => {
         setMobileOpen(false)
         const el = document.querySelector(href)
@@ -37,89 +43,95 @@ function Navbar() {
     }
 
     return (
-        <header
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
-                ? 'bg-black/95 backdrop-blur-md border-b border-gold/10 py-3'
-                : 'bg-transparent py-5'
-                }`}
-        >
-            {/* Desktop centered nav */}
-            <nav className="hidden md:flex items-center justify-center gap-12 px-8">
-                {NAV_LINKS.map(link => (
+        <>
+            {/* ─── Sticky Header ─── */}
+            <header
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
+                    ? 'bg-black/95 backdrop-blur-md border-b border-gold/10 py-3'
+                    : 'bg-transparent py-5'
+                    }`}
+            >
+                {/* Desktop centered nav */}
+                <nav className="hidden md:flex items-center justify-center gap-12 px-8">
+                    {NAV_LINKS.map(link => (
+                        <button
+                            key={link.label}
+                            onClick={() => handleNav(link.href)}
+                            className="text-[11px] tracking-[0.3em] uppercase font-light text-white/60 hover:text-gold transition-colors duration-300 relative group"
+                        >
+                            {link.label}
+                            <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-gold group-hover:w-full transition-all duration-500" />
+                        </button>
+                    ))}
+                </nav>
+
+                {/* Mobile hamburger — always visible on mobile */}
+                <div className="flex md:hidden items-center justify-between px-6">
+                    <span className="text-[10px] tracking-[0.3em] uppercase text-gold/60 font-light">Menu</span>
                     <button
-                        key={link.label}
-                        onClick={() => handleNav(link.href)}
-                        className="text-[11px] tracking-[0.3em] uppercase font-light text-white/60 hover:text-gold transition-colors duration-300 relative group"
+                        onClick={() => setMobileOpen(v => !v)}
+                        className="flex flex-col gap-[5px] p-2 z-[110] relative"
+                        aria-label="Toggle menu"
                     >
-                        {link.label}
-                        <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-gold group-hover:w-full transition-all duration-500" />
+                        <span className={`block w-5 h-[1px] bg-white/70 transition-all duration-300 ${mobileOpen ? 'rotate-45 translate-y-[6px]' : ''}`} />
+                        <span className={`block w-5 h-[1px] bg-white/70 transition-all duration-300 ${mobileOpen ? 'opacity-0' : ''}`} />
+                        <span className={`block w-5 h-[1px] bg-white/70 transition-all duration-300 ${mobileOpen ? '-rotate-45 -translate-y-[6px]' : ''}`} />
                     </button>
-                ))}
-            </nav>
+                </div>
+            </header>
 
-            {/* Mobile hamburger */}
-            <div className="flex md:hidden items-center justify-between px-6">
-                <span className="text-[10px] tracking-[0.3em] uppercase text-gold/60 font-light">Menu</span>
-                <button
-                    onClick={() => setMobileOpen(v => !v)}
-                    className="flex flex-col gap-[5px] p-2"
-                    aria-label="Toggle menu"
-                >
-                    <span className={`block w-5 h-[1px] bg-white/60 transition-all duration-300 ${mobileOpen ? 'rotate-45 translate-y-[6px]' : ''}`} />
-                    <span className={`block w-5 h-[1px] bg-white/60 transition-all duration-300 ${mobileOpen ? 'opacity-0' : ''}`} />
-                    <span className={`block w-5 h-[1px] bg-white/60 transition-all duration-300 ${mobileOpen ? '-rotate-45 -translate-y-[6px]' : ''}`} />
-                </button>
-            </div>
-
-            {/* Mobile Full-Screen Overlay Menu — Slide from right */}
+            {/* ─── Mobile Full-Screen Overlay ─── OUTSIDE header to avoid backdrop-filter CSS trap ─── */}
             <AnimatePresence>
                 {mobileOpen && (
                     <motion.div
-                        initial={{ x: '100%', opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: '100%', opacity: 0 }}
-                        transition={{ type: 'tween', duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className="fixed inset-0 z-[100] bg-[#050505] flex flex-col"
+                        initial={{ x: '100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '100%' }}
+                        transition={{ type: 'tween', duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                        className="fixed inset-0 z-[200] bg-[#050505] flex flex-col md:hidden"
+                        style={{ touchAction: 'none' }}
                     >
-                        {/* Header row */}
-                        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.04]">
+                        {/* Top bar */}
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.05]">
                             <span className="text-xs tracking-[0.3em] uppercase text-gold/50 font-light">Virudti Jewells</span>
                             <button
                                 onClick={() => setMobileOpen(false)}
-                                className="w-10 h-10 flex items-center justify-center border border-white/10 hover:border-gold/30 transition-colors duration-300"
+                                className="w-10 h-10 flex items-center justify-center border border-white/10 hover:border-gold/30 transition-colors duration-300 relative"
                                 aria-label="Close menu"
                             >
-                                <span className="block w-4 h-[1px] bg-white/60 rotate-45 translate-y-[0.5px]" />
-                                <span className="block w-4 h-[1px] bg-white/60 -rotate-45 -translate-y-[0.5px] -ml-4" />
+                                <span className="absolute w-4 h-[1px] bg-white/70 rotate-45" />
+                                <span className="absolute w-4 h-[1px] bg-white/70 -rotate-45" />
                             </button>
                         </div>
 
-                        {/* Nav links — large gold buttons */}
-                        <div className="flex flex-col items-start justify-center flex-1 px-10 gap-1">
+                        {/* Nav links */}
+                        <div className="flex flex-col items-start justify-center flex-1 px-10 gap-0">
                             {NAV_LINKS.map((link, i) => (
                                 <motion.button
                                     key={link.label}
-                                    initial={{ opacity: 0, x: 30 }}
+                                    initial={{ opacity: 0, x: 40 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.05 + i * 0.07, duration: 0.4 }}
+                                    transition={{ delay: 0.06 + i * 0.07, duration: 0.35 }}
                                     onClick={() => handleNav(link.href)}
-                                    className="text-4xl font-serif text-white/50 hover:text-gold py-4 transition-colors duration-300 tracking-wide w-full text-left border-b border-white/[0.04] last:border-0"
+                                    className="text-[2.6rem] font-serif text-white/50 hover:text-gold py-4 transition-colors duration-300 tracking-wide w-full text-left border-b border-white/[0.05] last:border-0"
                                 >
                                     {link.label}
                                 </motion.button>
                             ))}
                         </div>
 
-                        {/* Footer */}
-                        <div className="px-10 py-8 border-t border-white/[0.04]">
+                        {/* Footer strip */}
+                        <div className="px-10 py-8 border-t border-white/[0.05] flex items-center justify-between">
                             <p className="text-[10px] tracking-[0.2em] uppercase text-white/15">Madurai · Tamil Nadu</p>
+                            <p className="text-[10px] tracking-[0.15em] uppercase text-gold/20">Since 1998</p>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </header>
+        </>
     )
 }
+
 
 /* ═══════════════════════════════════════════════════════════════════
    ANNOUNCEMENT BAR — Slim gold strip (purely centered text, no logo)
