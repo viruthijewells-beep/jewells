@@ -282,8 +282,8 @@ export async function createTransfer(transfer: {
     const { data: transferRecord, error: transferErr } = await supabase
         .from('transfers')
         .insert({
-            from_branch_id: fromBranchId,
-            to_branch_id: toBranchId,
+            source_branch_id: fromBranchId,
+            dest_branch_id: toBranchId,
             product_id: productId,
             quantity,
         })
@@ -301,21 +301,19 @@ export async function createTransfer(transfer: {
         {
             product_id: productId,
             branch_id: fromBranchId,
-            action: 'TRANSFER_OUT',
             quantity,
             previous_count: oldSourceCount,
             new_count: newSourceCount,
-            reason: `Transfer to branch`,
+            reason: `TRANSFER_OUT to branch`,
             user_id: user?.id ?? null,
         },
         {
             product_id: productId,
             branch_id: toBranchId,
-            action: 'TRANSFER_IN',
             quantity,
             previous_count: oldDestCount,
             new_count: newDestCount,
-            reason: `Transfer from branch`,
+            reason: `TRANSFER_IN from branch`,
             user_id: user?.id ?? null,
         },
     ]
