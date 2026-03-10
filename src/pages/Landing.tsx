@@ -71,25 +71,48 @@ function Navbar() {
                 </button>
             </div>
 
-            {/* Mobile dropdown */}
+            {/* Mobile Full-Screen Overlay Menu — Slide from right */}
             <AnimatePresence>
                 {mobileOpen && (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden bg-black/98 border-t border-white/[0.05] overflow-hidden"
+                        initial={{ x: '100%', opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: '100%', opacity: 0 }}
+                        transition={{ type: 'tween', duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="fixed inset-0 z-[100] bg-[#050505] flex flex-col"
                     >
-                        <div className="flex flex-col items-center py-8 gap-6">
-                            {NAV_LINKS.map(link => (
-                                <button
+                        {/* Header row */}
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.04]">
+                            <span className="text-xs tracking-[0.3em] uppercase text-gold/50 font-light">Virudti Jewells</span>
+                            <button
+                                onClick={() => setMobileOpen(false)}
+                                className="w-10 h-10 flex items-center justify-center border border-white/10 hover:border-gold/30 transition-colors duration-300"
+                                aria-label="Close menu"
+                            >
+                                <span className="block w-4 h-[1px] bg-white/60 rotate-45 translate-y-[0.5px]" />
+                                <span className="block w-4 h-[1px] bg-white/60 -rotate-45 -translate-y-[0.5px] -ml-4" />
+                            </button>
+                        </div>
+
+                        {/* Nav links — large gold buttons */}
+                        <div className="flex flex-col items-start justify-center flex-1 px-10 gap-1">
+                            {NAV_LINKS.map((link, i) => (
+                                <motion.button
                                     key={link.label}
+                                    initial={{ opacity: 0, x: 30 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.05 + i * 0.07, duration: 0.4 }}
                                     onClick={() => handleNav(link.href)}
-                                    className="text-[11px] tracking-[0.3em] uppercase text-white/50 hover:text-gold transition-colors duration-300"
+                                    className="text-4xl font-serif text-white/50 hover:text-gold py-4 transition-colors duration-300 tracking-wide w-full text-left border-b border-white/[0.04] last:border-0"
                                 >
                                     {link.label}
-                                </button>
+                                </motion.button>
                             ))}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-10 py-8 border-t border-white/[0.04]">
+                            <p className="text-[10px] tracking-[0.2em] uppercase text-white/15">Madurai · Tamil Nadu</p>
                         </div>
                     </motion.div>
                 )}
@@ -257,19 +280,27 @@ function HeroSection() {
                         transition={{ duration: 0.8, delay: 1.1 }}
                         className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 md:mb-10"
                     >
-                        <button
-                            className="w-full sm:w-auto px-10 py-4 text-black font-semibold tracking-[0.12em] text-sm uppercase transition-all duration-500 active:scale-[0.98] hover:-translate-y-[2px]"
+                        <motion.button
+                            onClick={() => { const el = document.querySelector('#collections'); el?.scrollIntoView({ behavior: 'smooth' }) }}
+                            whileHover={{ scale: 1.04, boxShadow: '0 0 35px rgba(212,175,55,0.55)' }}
+                            whileTap={{ scale: 0.97 }}
+                            className="w-full sm:w-auto px-10 py-4 text-black font-semibold tracking-[0.12em] text-sm uppercase"
                             style={{
                                 background: 'linear-gradient(135deg, #CFAF5A, #F4E6A1, #B8963D)',
                                 boxShadow: '0 0 20px rgba(212,175,55,0.4)'
                             }}
                         >
                             Explore Collection
-                        </button>
-                        <button className="w-full sm:w-auto px-10 py-4 border border-white/20 text-white/90 font-medium tracking-[0.12em] text-sm uppercase hover:border-[#CFAF5A] hover:text-[#CFAF5A] transition-all duration-500 flex items-center justify-center gap-3 active:scale-[0.98]">
+                        </motion.button>
+                        <motion.button
+                            onClick={() => { const el = document.querySelector('#contact'); el?.scrollIntoView({ behavior: 'smooth' }) }}
+                            whileHover={{ scale: 1.03, borderColor: 'rgba(212,175,55,0.6)', color: '#CFAF5A' }}
+                            whileTap={{ scale: 0.97 }}
+                            className="w-full sm:w-auto px-10 py-4 border border-white/20 text-white/90 font-medium tracking-[0.12em] text-sm uppercase flex items-center justify-center gap-3"
+                        >
                             <MapPin className="w-3.5 h-3.5" />
                             Visit Our Store
-                        </button>
+                        </motion.button>
                     </motion.div>
 
                     {/* Micro trust badge */}
@@ -463,21 +494,30 @@ function WhyChooseSection() {
                     <h2 className="text-4xl md:text-5xl font-serif text-white">Why Choose Virudti</h2>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {reasons.map(({ icon: Icon, title, desc }, idx) => (
                         <motion.div
                             key={title}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
+                            whileHover={{
+                                y: -8,
+                                boxShadow: '0 20px 40px rgba(212,175,55,0.18)'
+                            }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: idx * 0.1 }}
-                            className="p-8 text-center border border-white/[0.03] hover:border-gold/15 transition-all duration-700 group"
+                            className="p-8 text-center border border-white/[0.04] hover:border-gold/20 transition-colors duration-500 cursor-default"
+                            style={{ borderRadius: '4px' }}
                         >
-                            <div className="w-14 h-14 mx-auto mb-6 flex items-center justify-center border border-gold/15 group-hover:border-gold/30 group-hover:bg-gold/5 transition-all duration-500">
-                                <Icon className="w-6 h-6 text-gold/60 group-hover:text-gold transition-colors duration-500" strokeWidth={1.5} />
-                            </div>
-                            <h3 className="text-sm font-medium text-white mb-2 tracking-wide">{title}</h3>
-                            <p className="text-xs text-white/30 font-light leading-relaxed">{desc}</p>
+                            <motion.div
+                                whileHover={{ scale: 1.12, rotate: 5 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                                className="w-16 h-16 mx-auto mb-7 flex items-center justify-center border border-gold/20 group-hover:border-gold/40 bg-gold/[0.03] hover:bg-gold/10 transition-all duration-500"
+                            >
+                                <Icon className="w-7 h-7 text-gold/60 hover:text-gold transition-colors duration-300" strokeWidth={1.2} />
+                            </motion.div>
+                            <h3 className="text-base font-serif text-white mb-3 tracking-wide">{title}</h3>
+                            <p className="text-xs text-white/35 font-light leading-relaxed">{desc}</p>
                         </motion.div>
                     ))}
                 </div>
@@ -675,14 +715,24 @@ function CTASection() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <button className="w-full sm:w-auto px-10 py-4 bg-gold/90 text-black font-medium tracking-[0.1em] text-sm uppercase hover:bg-gold transition-all duration-500 hover:shadow-[0_0_40px_rgba(212,175,55,0.25)] flex items-center justify-center gap-2">
+                    <motion.button
+                        onClick={() => { const el = document.querySelector('#contact'); el?.scrollIntoView({ behavior: 'smooth' }) }}
+                        whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(212,175,55,0.35)' }}
+                        whileTap={{ scale: 0.97 }}
+                        className="w-full sm:w-auto px-10 py-4 bg-gold/90 text-black font-medium tracking-[0.1em] text-sm uppercase flex items-center justify-center gap-2 hover:bg-gold transition-colors duration-300"
+                    >
                         <MapPin className="w-4 h-4" />
                         Visit Store Today
-                    </button>
-                    <a href="tel:+919876543210" className="w-full sm:w-auto px-10 py-4 border border-white/15 text-white/80 font-medium tracking-[0.1em] text-sm uppercase hover:border-gold/40 hover:text-gold transition-all duration-500 flex items-center justify-center gap-2">
+                    </motion.button>
+                    <motion.a
+                        href="tel:+919600996579"
+                        whileHover={{ scale: 1.03, boxShadow: '0 0 20px rgba(212,175,55,0.15)' }}
+                        whileTap={{ scale: 0.97 }}
+                        className="w-full sm:w-auto px-10 py-4 border border-white/15 text-white/80 font-medium tracking-[0.1em] text-sm uppercase hover:border-gold/40 hover:text-gold transition-all duration-500 flex items-center justify-center gap-2"
+                    >
                         <Phone className="w-4 h-4" />
                         Call Now
-                    </a>
+                    </motion.a>
                 </div>
             </motion.div>
         </section>
