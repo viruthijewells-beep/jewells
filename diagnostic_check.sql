@@ -116,21 +116,16 @@ ORDER BY created_at DESC
 LIMIT 10;
 
 -- ─────────────────────────────────────────────────────────
--- 9. CHECK STOCK HISTORY LOGS
+-- 9. CHECK STOCK HISTORY — ACTUAL COLUMNS
 -- ─────────────────────────────────────────────────────────
-SELECT
-    sh.action,
-    p.name AS product,
-    b.name AS branch,
-    sh.quantity,
-    sh.previous_count,
-    sh.new_count,
-    sh.reason,
-    sh.created_at
-FROM stock_history sh
-JOIN products p ON p.id = sh.product_id
-JOIN branches b ON b.id = sh.branch_id
-ORDER BY sh.created_at DESC
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'stock_history'
+ORDER BY ordinal_position;
+
+-- 9B. STOCK HISTORY RECENT RECORDS (raw)
+SELECT * FROM stock_history
+ORDER BY created_at DESC
 LIMIT 10;
 
 -- ─────────────────────────────────────────────────────────

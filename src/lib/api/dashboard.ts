@@ -136,7 +136,7 @@ export async function fetchTransfers(cursor: string | null) {
     try {
         let query = supabase
             .from('transfers')
-            .select('*, from_branch:branches!from_branch_id(name), to_branch:branches!to_branch_id(name), product:products(name), user:users(name)')
+            .select('*, from_branch:branches!source_branch_id(name), to_branch:branches!dest_branch_id(name), product:products(name), user:users(name)')
             .order('created_at', { ascending: false })
             .limit(20)
 
