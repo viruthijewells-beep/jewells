@@ -232,8 +232,10 @@ export async function createTransfer(transfer: {
             .eq('id', destInv.id)
         if (addErr) throw new Error(`Destination update failed: ${addErr.message}`)
     } else {
-        // Product is new at destination — insert WITHOUT source barcode (each branch has unique barcodes)
+        // Product is new at destination — insert with a new unique barcode for this branch
         newDestCount = quantity
+        // Generate a unique barcode for the destination branch (barcodes are branch-specific)
+        const destBarcode = `XFER-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
         const { error: insertErr } = await supabase
             .from('branch_inventory')
             .insert({
@@ -241,7 +243,7 @@ export async function createTransfer(transfer: {
                 product_id: productId,
                 stock_count: quantity,
                 sku: srcRow?.sku ?? null,
-                barcode: null,  // barcode is branch-specific, destination will assign its own
+                barcode: destBarcode,
                 selling_price: srcRow?.selling_price ?? 0,
                 purchase_price: srcRow?.purchase_price ?? 0,
                 min_stock_level: srcRow?.min_stock_level ?? 5,
