@@ -197,24 +197,24 @@ export async function createTransfer(transfer: {
     if (deductErr) throw new Error(`Source deduction failed: ${deductErr.message}`)
 
     // ── 4. Add stock to destination branch ──
-    // Fetch source row details first (needed for insert if product is new at destination)
+    // Fetch source row details (needed for insert if product is new at destination)
     const { data: srcRow, error: srcRowErr } = await supabase
         .from('branch_inventory')
-        .select('sku, barcode, selling_price, purchase_price, min_stock_level')
+        .select('sku, selling_price, purchase_price, min_stock_level')
         .eq('id', sourceInv.id)
         .single()
     if (srcRowErr) throw new Error(`Failed to read source inventory: ${srcRowErr.message}`)
 
-    // Find existing row at destination by EITHER product_id OR barcode (single query)
-    const barcodeFilter = srcRow?.barcode
-        ? `product_id.eq.${productId},barcode.eq.${srcRow.barcode}`
+    // Find existing row at destination by product_id OR sku (NOT barcode — barcodes are branch-unique)
+    const skuFilter = srcRow?.sku
+        ? `product_id.eq.${productId},sku.eq.${srcRow.sku}`
         : `product_id.eq.${productId}`
 
     const { data: destRows } = await supabase
         .from('branch_inventory')
         .select('id, stock_count')
         .eq('branch_id', toBranchId)
-        .or(barcodeFilter)
+        .or(skuFilter)
         .limit(1)
 
     const destInv = destRows?.[0] ?? null
@@ -223,7 +223,7 @@ export async function createTransfer(transfer: {
     let newDestCount = quantity
 
     if (destInv) {
-        // Product exists at destination — update stock
+        // Product already exists at destination — just increment stock
         oldDestCount = destInv.stock_count ?? 0
         newDestCount = oldDestCount + quantity
         const { error: addErr } = await supabase
@@ -232,7 +232,7 @@ export async function createTransfer(transfer: {
             .eq('id', destInv.id)
         if (addErr) throw new Error(`Destination update failed: ${addErr.message}`)
     } else {
-        // Product is new at destination — insert
+        // Product is new at destination — insert WITHOUT source barcode (each branch has unique barcodes)
         newDestCount = quantity
         const { error: insertErr } = await supabase
             .from('branch_inventory')
@@ -241,31 +241,31 @@ export async function createTransfer(transfer: {
                 product_id: productId,
                 stock_count: quantity,
                 sku: srcRow?.sku ?? null,
-                barcode: srcRow?.barcode ?? null,
+                barcode: null,  // barcode is branch-specific, destination will assign its own
                 selling_price: srcRow?.selling_price ?? 0,
                 purchase_price: srcRow?.purchase_price ?? 0,
                 min_stock_level: srcRow?.min_stock_level ?? 5,
             })
 
-        // If insert fails with unique violation, fall back to update (race condition safety)
         if (insertErr) {
+            // Safety: if unique constraint fires (race condition), fall back to update
             if (insertErr.code === '23505') {
                 const { data: raceRow } = await supabase
                     .from('branch_inventory')
                     .select('id, stock_count')
                     .eq('branch_id', toBranchId)
-                    .or(barcodeFilter)
+                    .or(skuFilter)
                     .limit(1)
                     .single()
 
                 if (raceRow) {
                     oldDestCount = raceRow.stock_count ?? 0
                     newDestCount = oldDestCount + quantity
-                    const { error: raceUpdateErr } = await supabase
+                    const { error: raceErr } = await supabase
                         .from('branch_inventory')
                         .update({ stock_count: newDestCount })
                         .eq('id', raceRow.id)
-                    if (raceUpdateErr) throw new Error(`Destination update (retry) failed: ${raceUpdateErr.message}`)
+                    if (raceErr) throw new Error(`Destination update (retry) failed: ${raceErr.message}`)
                 } else {
                     throw new Error(`Destination insert failed: ${insertErr.message}`)
                 }
