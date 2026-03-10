@@ -474,57 +474,138 @@ function CollectionsSection() {
    ═══════════════════════════════════════════════════════════════════ */
 function WhyChooseSection() {
     const reasons = [
-        { icon: ShieldCheck, title: 'Certified Gold Purity', desc: 'Every piece BIS Hallmark certified' },
-        { icon: Gem, title: 'Handcrafted Designs', desc: 'Unique artistry in every detail' },
-        { icon: Award, title: 'Transparent Pricing', desc: 'No hidden charges, ever' },
-        { icon: Crown, title: 'Trusted Since 1998', desc: '25+ years of excellence' },
+        {
+            icon: ShieldCheck,
+            stat: '100%',
+            title: 'Certified Gold Purity',
+            desc: 'Every piece is BIS Hallmark certified — guaranteed purity with every gram.',
+            color: 'from-gold/10 to-transparent',
+        },
+        {
+            icon: Gem,
+            stat: '500+',
+            title: 'Handcrafted Designs',
+            desc: 'Unique artistry in every detail, crafted by skilled artisans.',
+            color: 'from-gold/10 to-transparent',
+        },
+        {
+            icon: Award,
+            stat: '₹0',
+            title: 'Transparent Pricing',
+            desc: 'Zero hidden charges. What you see is what you pay — always.',
+            color: 'from-gold/10 to-transparent',
+        },
+        {
+            icon: Crown,
+            stat: '26+',
+            title: 'Trusted Since 1998',
+            desc: '26 years of excellence. Trusted by thousands of families in Madurai.',
+            color: 'from-gold/10 to-transparent',
+        },
     ]
 
     return (
-        <section className="py-28 px-6 bg-[#050505]">
-            <div className="max-w-7xl mx-auto">
+        <section className="py-32 px-6 bg-[#050505] relative overflow-hidden">
+            {/* Ambient gold glow behind section */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgba(212,175,55,0.06),transparent_65%)] pointer-events-none" />
+            {/* Top decorative line */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-20 bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+
+            <div className="max-w-7xl mx-auto relative z-10">
+                {/* Section Header */}
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 1 }}
-                    className="text-center mb-16"
+                    transition={{ duration: 0.9 }}
+                    className="text-center mb-20"
                 >
-                    <p className="text-xs tracking-[0.3em] uppercase text-gold/50 font-light mb-4">Our Promise</p>
-                    <h2 className="text-4xl md:text-5xl font-serif text-white">Why Choose Virudti</h2>
+                    <p className="text-[10px] tracking-[0.45em] uppercase text-gold/50 font-light mb-5 flex items-center justify-center gap-3">
+                        <span className="inline-block w-8 h-[1px] bg-gold/30" />
+                        Our Promise
+                        <span className="inline-block w-8 h-[1px] bg-gold/30" />
+                    </p>
+                    <h2 className="text-4xl md:text-6xl font-serif text-white mb-5 tracking-tight">
+                        Why Choose <span className="text-gold">Virudti</span>
+                    </h2>
+                    <p className="text-sm text-white/35 font-light max-w-md mx-auto leading-relaxed">
+                        Decades of trust, unmatched craftsmanship and complete transparency in every purchase.
+                    </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {reasons.map(({ icon: Icon, title, desc }, idx) => (
+                {/* Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {reasons.map(({ icon: Icon, stat, title, desc }, idx) => (
                         <motion.div
                             key={title}
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             whileHover={{
-                                y: -8,
-                                boxShadow: '0 20px 40px rgba(212,175,55,0.18)'
+                                y: -10,
+                                boxShadow: '0 24px 48px rgba(212,175,55,0.18), 0 0 0 1px rgba(212,175,55,0.18)',
                             }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: idx * 0.1 }}
-                            className="p-8 text-center border border-white/[0.04] hover:border-gold/20 transition-colors duration-500 cursor-default"
-                            style={{ borderRadius: '4px' }}
+                            viewport={{ once: true, margin: '-60px' }}
+                            transition={{ duration: 0.65, delay: idx * 0.1 }}
+                            className="relative group flex flex-col p-8 border border-white/[0.05] hover:border-gold/25 transition-colors duration-500 overflow-hidden"
+                            style={{ background: 'linear-gradient(160deg, rgba(212,175,55,0.04) 0%, rgba(10,10,10,0.9) 50%)' }}
                         >
+                            {/* Stat number — large background watermark */}
+                            <span className="absolute top-4 right-5 text-7xl font-serif text-gold/[0.07] leading-none select-none pointer-events-none group-hover:text-gold/[0.12] transition-colors duration-700">
+                                {stat}
+                            </span>
+
+                            {/* Icon container */}
                             <motion.div
-                                whileHover={{ scale: 1.12, rotate: 5 }}
-                                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                                className="w-16 h-16 mx-auto mb-7 flex items-center justify-center border border-gold/20 group-hover:border-gold/40 bg-gold/[0.03] hover:bg-gold/10 transition-all duration-500"
+                                whileHover={{ scale: 1.1, rotate: 6 }}
+                                transition={{ type: 'spring', stiffness: 280, damping: 14 }}
+                                className="w-14 h-14 mb-7 flex items-center justify-center border border-gold/20 bg-gold/[0.06] group-hover:bg-gold/[0.12] group-hover:border-gold/40 transition-all duration-500"
+                                style={{ borderRadius: '2px' }}
                             >
-                                <Icon className="w-7 h-7 text-gold/60 hover:text-gold transition-colors duration-300" strokeWidth={1.2} />
+                                <Icon className="w-6 h-6 text-gold/70 group-hover:text-gold transition-colors duration-400" strokeWidth={1.2} />
                             </motion.div>
-                            <h3 className="text-base font-serif text-white mb-3 tracking-wide">{title}</h3>
-                            <p className="text-xs text-white/35 font-light leading-relaxed">{desc}</p>
+
+                            {/* Stat */}
+                            <p className="text-3xl font-serif text-gold mb-1 tracking-tight" style={{ textShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
+                                {stat}
+                            </p>
+
+                            {/* Title */}
+                            <h3 className="text-base font-serif text-white mb-3 leading-snug">{title}</h3>
+
+                            {/* Desc */}
+                            <p className="text-xs text-white/40 font-light leading-[1.8] flex-1">{desc}</p>
+
+                            {/* Bottom gold accent line */}
+                            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                         </motion.div>
                     ))}
                 </div>
+
+                {/* Bottom Stats Bar */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                    className="mt-16 border border-white/[0.04] grid grid-cols-2 md:grid-cols-4 divide-x divide-white/[0.04]"
+                >
+                    {[
+                        { value: '10,000+', label: 'Happy Families' },
+                        { value: '500+', label: 'Unique Designs' },
+                        { value: '3', label: 'Showrooms' },
+                        { value: '4.8 ★', label: 'Customer Rating' },
+                    ].map(({ value, label }) => (
+                        <div key={label} className="py-8 text-center group hover:bg-gold/[0.03] transition-colors duration-500">
+                            <p className="text-2xl md:text-3xl font-serif text-gold mb-1 group-hover:text-gold transition-colors" style={{ textShadow: '0 0 15px rgba(212,175,55,0.25)' }}>{value}</p>
+                            <p className="text-[10px] tracking-[0.2em] uppercase text-white/30 font-light">{label}</p>
+                        </div>
+                    ))}
+                </motion.div>
             </div>
         </section>
     )
 }
+
 
 /* ═══════════════════════════════════════════════════════════════════
    6️⃣ CUSTOMER REVIEWS
