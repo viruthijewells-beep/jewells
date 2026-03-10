@@ -413,7 +413,7 @@ function AboutSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   4️⃣ FEATURED COLLECTIONS GRID
+   4️⃣ FEATURED COLLECTIONS GRID — with Mobile Touch Interactions
    ═══════════════════════════════════════════════════════════════════ */
 function CollectionsSection() {
     const collections = [
@@ -422,6 +422,8 @@ function CollectionsSection() {
         { name: 'Modern Trend', desc: 'Contemporary luxury designs', image: '/images/collection-modern.jpg' },
         { name: 'Silver Elegance', desc: 'Refined silver craftsmanship', image: '/images/collection-silver.jpg' },
     ]
+
+    const [touchedIdx, setTouchedIdx] = useState<number | null>(null)
 
     return (
         <section id="collections" className="py-28 px-6 bg-[#080808]">
@@ -438,44 +440,88 @@ function CollectionsSection() {
                 </motion.div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {collections.map((col, idx) => (
-                        <motion.div
-                            key={col.name}
-                            initial={{ opacity: 0, y: 24 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ duration: 0.65, delay: idx * 0.08 }}
-                            className="group relative aspect-[16/10] bg-[#0A0A0A] border border-white/[0.03] hover:border-gold/30 rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
-                        >
-                            {/* Background Image */}
-                            <img
-                                src={col.image}
-                                alt={col.name}
-                                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-110 transition-all duration-1000 ease-out"
-                            />
+                    {collections.map((col, idx) => {
+                        const isTouched = touchedIdx === idx
 
-                            {/* Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 group-hover:from-black/70 transition-all duration-700" />
+                        return (
+                            <motion.div
+                                key={col.name}
+                                initial={{ opacity: 0, y: 24 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.65, delay: idx * 0.08 }}
+                                /* ─── Touch handlers ─── */
+                                onTouchStart={() => setTouchedIdx(idx)}
+                                onTouchEnd={() => setTouchedIdx(null)}
+                                onTouchCancel={() => setTouchedIdx(null)}
+                                className="group relative aspect-[16/10] bg-[#0A0A0A] border rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
+                                style={{
+                                    /* GPU-accelerated transitions only */
+                                    transition: 'transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease',
+                                    touchAction: 'manipulation', /* prevent double-tap zoom delay */
+                                    /* Touch active state */
+                                    transform: isTouched ? 'scale(1.04)' : 'scale(1)',
+                                    boxShadow: isTouched
+                                        ? '0 0 25px rgba(212,175,55,0.35), 0 10px 40px rgba(212,175,55,0.20)'
+                                        : '0 4px 24px rgba(0,0,0,0.4)',
+                                    borderColor: isTouched ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.03)',
+                                }}
+                            >
+                                {/* Background Image — brightness boosts on hover & touch */}
+                                <img
+                                    src={col.image}
+                                    alt={col.name}
+                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 ease-out"
+                                    style={{
+                                        opacity: isTouched ? 0.85 : 0.62,
+                                        filter: isTouched ? 'brightness(1.08)' : 'brightness(1)',
+                                        transform: isTouched ? 'scale(1.06)' : undefined,
+                                        transition: 'opacity 0.35s ease, filter 0.35s ease, transform 0.35s ease',
+                                    }}
+                                />
 
-                            {/* Text Content — always visible on mobile */}
-                            <div className="absolute bottom-0 left-0 p-6 md:p-8 z-10 w-full">
-                                <p className="text-[9px] tracking-[0.25em] uppercase text-gold/70 mb-2 font-medium">Collection</p>
-                                <h3 className="text-xl md:text-2xl font-serif text-white group-hover:text-gold transition-colors duration-500 mb-1">
-                                    {col.name}
-                                </h3>
-                                <p className="text-sm text-white/50 font-light">{col.desc}</p>
-                            </div>
+                                {/* Base gradient overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 group-hover:from-black/70 transition-all duration-700" />
 
-                            {/* Gold bottom line */}
-                            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                        </motion.div>
-                    ))}
+                                {/* Gold shine overlay — fades in on touch */}
+                                <div
+                                    className="absolute inset-0 pointer-events-none"
+                                    style={{
+                                        background: 'linear-gradient(to bottom, rgba(212,175,55,0.10), rgba(0,0,0,0))',
+                                        opacity: isTouched ? 1 : 0,
+                                        transition: 'opacity 0.35s ease',
+                                    }}
+                                />
+
+                                {/* Text Content */}
+                                <div className="absolute bottom-0 left-0 p-6 md:p-8 z-10 w-full">
+                                    <p className="text-[9px] tracking-[0.25em] uppercase text-gold/70 mb-2 font-medium">Collection</p>
+                                    <h3
+                                        className="text-xl md:text-2xl font-serif mb-1 transition-colors duration-300"
+                                        style={{ color: isTouched ? '#D4AF37' : 'white' }}
+                                    >
+                                        {col.name}
+                                    </h3>
+                                    <p className="text-sm text-white/55 font-light">{col.desc}</p>
+                                </div>
+
+                                {/* Gold bottom accent line */}
+                                <div
+                                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/60 to-transparent"
+                                    style={{
+                                        opacity: isTouched ? 1 : 0,
+                                        transition: 'opacity 0.35s ease',
+                                    }}
+                                />
+                            </motion.div>
+                        )
+                    })}
                 </div>
             </div>
         </section>
     )
 }
+
 
 /* ═══════════════════════════════════════════════════════════════════
    5️⃣ WHY CHOOSE VIRUDTI
